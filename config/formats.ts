@@ -26,7 +26,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		section: "Sideshow Tourney Formats",
 	},
 	{
-		name: "Unc Cup ",
+		name: "[Gen 9] Unc Cup ",
 		gameType: 'doubles',
 		searchShow: false,
 		bestOfDefault: true,
