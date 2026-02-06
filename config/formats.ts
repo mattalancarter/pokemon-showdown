@@ -55,7 +55,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 	{
 		name: "Reg G Unc Cup",
 		desc: `2024 Regulation G, but only with pokemon from generation 5 and before.`,
-		mod: 'uncvgc',
+		mod: 'gen9uncvgc',
 		gameType: 'doubles',
 		searchShow: false,
 		bestOfDefault: true,
