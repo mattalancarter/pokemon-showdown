@@ -26,11 +26,11 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		section: "Sideshow Tourney Formats",
 	},
 	{
-		name: "[Gen 9] National Dex Unc Cup ",
+		name: "Unc Cup ",
 		gameType: 'doubles',
 		searchShow: false,
 		bestOfDefault: true,
-		mod: 'uncvgc',
+		mod: 'gen9uncvgc',
 		ruleset: ['Obtainable', 'Team Preview', 'Species Clause', 'Nickname Clause','NatDex Mod','HP Percentage Mod', 'Cancel Mod', 'Terastal Clause','Picked Team Size = Auto', 'VGC Timer', 'Open Team Sheets', 'Limit One Restricted', 'Mega Rayquaza Clause'],
 		restricted: ['Restricted Legendary'],
 		banlist: ['Kyogre-Primal', 'Groudon-Primal', 'Mythical','Greninja-Bond','Rayquaza-Mega'],
