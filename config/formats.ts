@@ -3027,7 +3027,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		gameType: 'doubles',
 		searchShow: false,
 		bestOfDefault: true,
-		mod: 'uncvgc',
+		mod: 'gen9uncvgc',
 		ruleset: ['Standard NatDex', 'Terastal Clause','Picked Team Size = Auto', 'VGC Timer', 'Open Team Sheets', 'Limit One Restricted'],
 		restricted: ['Restricted Legendary'],
 		banlist: ['Kyogre-Primal', 'Groudon-Primal', 'Mythical'],
