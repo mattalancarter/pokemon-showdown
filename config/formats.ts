@@ -26,7 +26,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		section: "Sideshow Tourney Formats",
 	},
 	{
-		name: "[Gen 9] Unc Cup ",
+		name: "[Gen 9] Sideshow Unc Cup ",
 		gameType: 'doubles',
 		searchShow: false,
 		bestOfDefault: true,
@@ -52,15 +52,42 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			}
 		}
 	},
+	// {
+	// 	name: "Reg G Unc Cup",
+	// 	desc: `2024 Regulation G, but only with pokemon from generation 5 and before.`,
+	// 	mod: 'gen9uncvgc',
+	// 	gameType: 'doubles',
+	// 	searchShow: false,
+	// 	bestOfDefault: true,
+	// 	ruleset: ['Standard NatDex','Terastal Clause', 'Item Clause = 1', 'Picked Team Size = Auto', 'VGC Timer', 'Open Team Sheets', 'Limit One Restricted'],
+	// 	restricted: ['Restricted Legendary'],
+	// },
 	{
-		name: "Reg G Unc Cup",
-		desc: `2024 Regulation G, but only with pokemon from generation 5 and before.`,
-		mod: 'gen9uncvgc',
+		name: "[Gen 9] National Dex Unc Cup ",
 		gameType: 'doubles',
 		searchShow: false,
 		bestOfDefault: true,
-		ruleset: ['Standard NatDex','Terastal Clause', 'Item Clause = 1', 'Picked Team Size = Auto', 'VGC Timer', 'Open Team Sheets', 'Limit One Restricted'],
+		mod: 'gen9uncvgc',
+		ruleset: ['Obtainable', 'Team Preview', 'Species Clause', 'Nickname Clause','NatDex Mod','HP Percentage Mod', 'Cancel Mod', 'Terastal Clause','Picked Team Size = Auto', 'VGC Timer', 'Open Team Sheets', 'Limit One Restricted', 'Mega Rayquaza Clause'],
 		restricted: ['Restricted Legendary'],
+		banlist: ['Kyogre-Primal', 'Groudon-Primal', 'Mythical','Greninja-Bond','Rayquaza-Mega', 'Dialga-Origin','Palkia-Origin'],
+		onValidateSet(set, format, setHas, teamHas) {
+			for (const moveid of set.moves) {
+				const move = this.dex.moves.get(moveid);
+				if (move.isNonstandard === 'Past') {
+					return [`${set.name || set.species}'s move ${move.name} is not available in Gen 9.`];
+				}
+			}
+			if (set.item) {
+				const item = this.dex.items.get(set.item);
+				if (item.megaStone && !(this.ruleTable.has(`+item:${item.id}`) || this.ruleTable.has(`+pokemontag:mega`))) {
+					return [`Mega Evolution is banned.`];
+				}
+				if (item.zMove && !(this.ruleTable.has(`+item:${item.id}`))) {
+					return [`${item.name} is banned.`];
+				}
+			}
+		}
 	},
 
 
