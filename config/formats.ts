@@ -75,6 +75,51 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		restricted: ['Restricted Legendary'],
 		banlist: ['Kyogre-Primal', 'Groudon-Primal', 'Mythical','Greninja-Bond','Rayquaza-Mega', 'Dialga-Origin','Palkia-Origin'],
 		onValidateSet(set, format, setHas, teamHas) {
+			const species = this.dex.species.get(set.species);
+    
+    // Determine the latest generation this Pokemon was available in
+    let latestGen = 9;
+    if (species.isNonstandard === 'Past') {
+        const learnset = this.dex.species.getLearnset(species.id);
+        if (learnset) {
+            latestGen = 0;
+            for (const moveid in learnset) {
+                const sources = learnset[moveid];
+                for (const source of sources) {
+                    const gen = parseInt(source.charAt(0));
+                    if (!isNaN(gen) && gen > latestGen && gen <= 9) {
+                        latestGen = gen;
+                    }
+                }
+            }
+        }
+    }
+    
+    // Check moves against the latest generation (VGC-legal sources only)
+    for (const moveid of set.moves) {
+        const move = this.dex.moves.get(moveid);
+        const learnset = this.dex.species.getLearnset(species.id);
+        
+        if (!learnset || !learnset[move.id]) {
+            return [`${set.name || set.species} cannot learn ${move.name}.`];
+        }
+        
+        const sources = learnset[move.id];
+        
+        // VGC-legal source types: L (level), M (TM), E (egg), T (tutor)
+        // NOT allowed: V (Virtual Console), S (event), D (Dream World)
+        const hasVGCLegalSource = sources.some((source: string) => {
+            const gen = parseInt(source.charAt(0));
+            const method = source.charAt(1);
+            
+            // Must be from the latest generation AND a VGC-legal method
+            return gen === latestGen && ['L', 'M', 'E', 'T'].includes(method);
+        });
+        
+        if (!hasVGCLegalSource) {
+            return [`${set.name || set.species} cannot learn ${move.name} in Generation ${latestGen} VGC.`];
+        }
+    }
 			for (const moveid of set.moves) {
 				const move = this.dex.moves.get(moveid);
 				if (move.isNonstandard === 'Past') {
