@@ -82,47 +82,68 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 				}
 			}
 			const species = this.dex.species.get(set.species);
-    
+
+			// Use getFullLearnset to handle formes that inherit learnsets
+			const fullLearnset = this.dex.species.getFullLearnset(species.id);
+
 			// Determine the latest generation this Pokemon was available in
 			let latestGen = 0;
-			const learnsetData = this.dex.species.getLearnsetData(species.id);
-			
-			if (learnsetData.learnset) {
-				// Find the highest generation number in the learnset
-				for (const moveid in learnsetData.learnset) {
-					const sources = learnsetData.learnset[moveid];
-					for (const source of sources) {
-						const gen = parseInt(source.charAt(0));
-						if (!isNaN(gen) && gen > latestGen && gen <= 9) {
-							latestGen = gen;
+
+			for (const learnsetEntry of fullLearnset) {
+				if (learnsetEntry.learnset) {
+					for (const moveid in learnsetEntry.learnset) {
+						const sources = learnsetEntry.learnset[moveid];
+						for (const source of sources) {
+							const gen = parseInt(source.charAt(0));
+							if (!isNaN(gen) && gen > latestGen && gen <= 9) {
+								latestGen = gen;
+							}
 						}
 					}
 				}
 			}
-			
-			// If we didn't find any generation, default to 9 (shouldn't happen for valid Pokemon)
+
+			// If we didn't find any generation, default to 9
 			if (latestGen === 0) latestGen = 9;
-			
+
 			// Check moves against the latest generation (VGC-legal sources only)
 			for (const moveid of set.moves) {
 				const move = this.dex.moves.get(moveid);
 				
-				if (!learnsetData.learnset || !learnsetData.learnset[move.id]) {
-					return [`${set.name || set.species} cannot learn ${move.name}.`];
-				}
+				// Check across all learnset entries (handles forme inheritance)
+				let hasVGCLegalSource = false;
 				
-				const sources = learnsetData.learnset[move.id];
-				
-				// VGC-legal source types: L (level), M (TM), E (egg), T (tutor)
-				// NOT allowed: V (Virtual Console), S (event), D (Dream World), C (prevo compatibility marker)
-				const hasVGCLegalSource = sources.some((source) => {
-					const gen = parseInt(source.charAt(0));
-					const method = source.charAt(1);
+				for (const learnsetEntry of fullLearnset) {
+					if (!learnsetEntry.learnset || !learnsetEntry.learnset[move.id]) continue;
 					
-					// Must be from EXACTLY the latest generation AND a VGC-legal method
-					return gen === latestGen && ['L', 'M', 'E', 'T'].includes(method);
-				});
-				
+					const sources = learnsetEntry.learnset[move.id];
+					
+					const foundLegalSource = sources.some((source) => {
+						const gen = parseInt(source.charAt(0));
+						const method = source.charAt(1);
+						
+						if (gen !== latestGen) return false;
+						
+						// Standard VGC methods
+						if (['L', 'M', 'E', 'T'].includes(method)) return true;
+						
+						// Virtual Console is allowed in Gen 8 (Let's Go transfers)
+						if (gen === 8 && method === 'V') return true;
+						
+						return false;
+					});
+					
+					if (foundLegalSource) {
+						hasVGCLegalSource = true;
+						break;
+					}
+				}
+				if (!hasVGCLegalSource && species.baseSpecies === 'Smeargle') {
+				// Check if the move is Sketchable (not flagged as nosketch and not nonstandard)
+					if (!move.flags['nosketch'] && !move.isNonstandard) {
+						hasVGCLegalSource = true;
+					}
+				}
 				if (!hasVGCLegalSource) {
 					return [`${set.name || set.species} cannot learn ${move.name} in Generation ${latestGen} VGC.`];
 				}
